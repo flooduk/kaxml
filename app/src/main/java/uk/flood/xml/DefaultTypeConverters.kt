@@ -1,4 +1,4 @@
-package uk.flood.xmlparser
+package uk.flood.xml
 
 import android.annotation.SuppressLint
 import java.math.BigDecimal
@@ -61,3 +61,10 @@ object IntTypeConverter : XmlTypeConverter<Int> {
 
 }
 
+fun defaultTypesConverters() = mapOf(
+    String::class to StringTypeConverter,
+    Date::class to DateTypeConverter,
+    Boolean::class to BooleanTypeConverter,
+    Int::class to IntTypeConverter,
+    BigDecimal::class to BigDecimalTypeConverter
+)

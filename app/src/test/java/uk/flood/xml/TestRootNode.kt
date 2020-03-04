@@ -1,4 +1,4 @@
-package uk.flood.xmlparser
+package uk.flood.xml
 
 // no need annotate sealed class
 sealed class TestSealed {

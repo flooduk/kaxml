@@ -1,29 +1,24 @@
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST", "unused")
 
 package uk.flood.xml
 
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
-import java.math.BigDecimal
 import java.util.*
-import kotlin.reflect.*
-import kotlin.reflect.full.*
+import kotlin.reflect.KClass
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KType
+import kotlin.reflect.full.cast
+import kotlin.reflect.full.createInstance
+import kotlin.reflect.full.isSupertypeOf
+import kotlin.reflect.full.starProjectedType
 
-class XmlParser<T : Any>(
+class Parser<T : Any>(
     private val klass: KClass<T>,
-    private val typeConverters: Map<KClass<*>, XmlTypeConverter<*>> = defaultTypesConverters
+    private val typeConverters: Map<KClass<*>, XmlTypeConverter<*>> = defaultTypesConverters()
 ) {
-
-    private val refs = AnnotatesReference(klass)
-
-    private val builder by lazy {
-        XmlBuilder<T>(mapex, typeConverters)
-    }
-
-    fun build(value: T): String {
-        return builder.buildString(value)
-    }
+    private val refs: AnnotatesReference = AnnotatesReference.provide(klass)
 
     fun parse(sourceXml: String): T {
 
@@ -43,7 +38,7 @@ class XmlParser<T : Any>(
                         bool = true
                         if (!stack.isEmpty()) {
                             stack.peek().let { pair ->
-                                pair.first.nodeList[parser.name]?.let { property ->
+                                pair.first.list[parser.name]?.let { property ->
                                     mutableListOf<Any>().let { list ->
                                         stack.push(nodeDescription to list)
                                         property.setter.call(pair.second, list)
@@ -61,7 +56,7 @@ class XmlParser<T : Any>(
                                 firstTag = klass.cast(currentTag)
                             }
                             for (i in 0 until parser.attributeCount) {
-                                nodeDescription.attributes[parser.getAttributeName(i)]?.let {
+                                nodeDescription.attr[parser.getAttributeName(i)]?.let {
                                     it.setter.call(
                                         currentTag,
                                         cast(parser.getAttributeValue(i), it.returnType)
@@ -70,7 +65,6 @@ class XmlParser<T : Any>(
 
                             }
                         }
-
                     }
                 }
                 XmlPullParser.END_TAG -> {
@@ -79,7 +73,7 @@ class XmlParser<T : Any>(
                             currentTag = stack.pop().second
                             if (!stack.isEmpty()) {
                                 stack.peek().let {
-                                    it.first.nodes[parser.name]?.let { property ->
+                                    it.first.node[parser.name]?.let { property ->
                                         addNode(it.second, property, currentTag)
                                     }
 
@@ -104,7 +98,6 @@ class XmlParser<T : Any>(
     }
 
     private fun addNode(objectReference: Any, property: KMutableProperty1<*, *>, value: Any?) {
-        // найдена Node с именем
         if (property.isList()) {
             var currentValue: Any? = null
             if (!property.isLateinit) {
@@ -127,13 +120,5 @@ class XmlParser<T : Any>(
         }?.value?.to(value)
     }
 
-    companion object {
-        val defaultTypesConverters = mapOf(
-            String::class to StringTypeConverter,
-            Date::class to DateTypeConverter,
-            Boolean::class to BooleanTypeConverter,
-            Int::class to IntTypeConverter,
-            BigDecimal::class to BigDecimalTypeConverter
-        )
-    }
+
 }

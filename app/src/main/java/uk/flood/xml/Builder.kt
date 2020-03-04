@@ -4,9 +4,10 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
-internal class XmlBuilder<T : Any>(
-    private val map: Map<String, XmlNodeDescription>,
-    private val converters: Map<KClass<*>, XmlTypeConverter<*>>
+@Suppress("unused")
+class Builder<T : Any>(
+    klass: KClass<T>,
+    private val converters: Map<KClass<*>, XmlTypeConverter<*>> = defaultTypesConverters()
 ) {
 
     private data class BuilderXmlEntity(
@@ -18,8 +19,10 @@ internal class XmlBuilder<T : Any>(
 
     private val stack = Stack<BuilderXmlEntity>()
 
+    private val refs = AnnotatesReference.provide(klass)
+
     private fun fillAttrs(node: Any, nodeName: String) {
-        map[nodeName]?.attributes?.entries?.forEach { (s, p) ->
+        refs.get(nodeName)?.attr?.entries?.forEach { (s, p) ->
             attr(p.getter.call(node), s)
         }
     }
@@ -31,13 +34,13 @@ internal class XmlBuilder<T : Any>(
                 addNode(v, v::class.findAnnotation<Node>()?.value ?: valueNodeName)
             }
         } else {
-            map[valueNodeName]?.nodeList?.forEach { (s, p) ->
+            refs.get(valueNodeName)?.list?.forEach { (s, p) ->
                 p.getter.call(value)?.let { propertyValue ->
                     addNode(propertyValue, s)
                 }
             }
 
-            map[valueNodeName]?.nodes?.forEach { (s, p) ->
+            refs.get(valueNodeName)?.node?.forEach { (s, p) ->
                 p.getter.call(value)?.let { propertyValue ->
                     if (propertyValue is List<*>) {
                         fillNodes(propertyValue, s)
@@ -94,9 +97,7 @@ internal class XmlBuilder<T : Any>(
         sb.append(header)
     }
 
-    override fun toString(): String {
-        return sb.toString()
-    }
+    override fun toString() = sb.toString()
 
     private fun addNode(element: Any, elementName: String) {
         tag(elementName)
@@ -105,7 +106,7 @@ internal class XmlBuilder<T : Any>(
         end()
     }
 
-    fun buildString(element: T): String {
+    fun build(element: T): String {
         element::class.findAnnotation<Node>()?.let {
             clear()
             addNode(element, it.value)

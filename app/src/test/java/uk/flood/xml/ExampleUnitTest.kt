@@ -1,4 +1,4 @@
-package uk.flood.xmlparser
+package uk.flood.xml
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -21,24 +21,31 @@ class ExampleUnitTest {
                 "  <NodeList>\n" +
                 "    <Sealed1 Sealed1Attribute=\"v1\"/>\n" +
                 "    <Sealed1 Sealed1Attribute=\"v2\"/>\n" +
-                "    <Sealed2 Sealed1Attribute=\"v3\"/>\n" +
-                "    <Sealed2 Sealed1Attribute=\"v4\"/>\n" +
+                "    <Sealed2 Sealed1Attribute=\"v3\">\n" +
+                "      <InnerSealedNode InnerAttribute1=\"inner value\" InnerAttribute2=\"17\"/>\n" +
+                "    </Sealed2>\n" +
+                "    <Sealed2 Sealed1Attribute=\"v4\">\n" +
+                "      <InnerSealedNode InnerAttribute1=\"inner value\" InnerAttribute2=\"13\"/>\n" +
+                "    </Sealed2>\n" +
                 "  </NodeList>\n" +
                 "</RootNode>\n"
 
-        XmlParser(TestRootNode::class).apply {
-            println(xml)
-            val data1 = parse(xml)
-            println(data1)
-            val string1 = build(data1)
-            println(string1)
-            val data2 = parse(string1)
-            val string2 = build(data2)
-            println(string2)
+        val parser = Parser(TestRootNode::class)
+        val builder = Builder(TestRootNode::class)
 
-            assertEquals(string1, string2)
 
-        }
+        println(xml)
+        val data1 = parser.parse(xml)
+        println(data1)
+        val string1 = builder.build(data1)
+        println(string1)
+        val data2 = parser.parse(string1)
+        val string2 = builder.build(data2)
+        println(string2)
+
+        assertEquals(string1, string2)
+
+
     }
 
 }
