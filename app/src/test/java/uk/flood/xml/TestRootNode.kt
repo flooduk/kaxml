@@ -71,6 +71,6 @@ class TestRootNode {
 
     // required = true
     @NodeList("NodeList")
-    lateinit var innerList: List<TestSealed>
+    lateinit var innerList: MutableList<TestSealed.Sealed1>
 
 }

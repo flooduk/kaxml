@@ -22,8 +22,10 @@ class Builder<T : Any>(
     private val refs = AnnotatesReference.provide(klass)
 
     private fun fillAttrs(node: Any, nodeName: String) {
-        refs.get(nodeName)?.attr?.entries?.forEach { (s, p) ->
-            attr(p.getter.call(node), s)
+        if (node !is List<*>) {
+            refs.get(nodeName)?.attr?.entries?.forEach { (s, p) ->
+                attr(p.getter.call(node), s)
+            }
         }
     }
 

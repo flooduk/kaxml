@@ -33,6 +33,20 @@ class ExampleUnitTest {
         val parser = Parser(TestRootNode::class)
         val builder = Builder(TestRootNode::class)
 
+        val testString = builder.build(TestRootNode().also {
+            it.attribute1 = "123"
+            it.attribute2 = 456
+            it.innerList = mutableListOf<TestSealed.Sealed1>().also {
+                it.add(TestSealed.Sealed1().also {
+                    it.name = "789"
+                })
+            }
+            it.flatList = listOf()
+            it.innerNode = TestInnerNode().also {
+                it.innerAttribute1 = "234"
+            }
+        })
+        println(testString)
 
         println(xml)
         val data1 = parser.parse(xml)

@@ -50,7 +50,10 @@ class AnnotatesReference private constructor(
                         }
                         is NodeList -> {
                             value.list[it.value] = property
-                            addElement(it.value, property.type(true))
+                            val xklass = property.type(true)
+                            val elementName = xklass.findAnnotation<Node>()?.value ?: it.value
+                            addElement(elementName, xklass)
+                            addElement(it.value, xklass)
                         }
                     }
                 }
