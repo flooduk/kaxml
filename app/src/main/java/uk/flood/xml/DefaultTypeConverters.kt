@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.reflect.KClass
 
 
 interface XmlTypeConverter<T : Any> {
@@ -61,10 +62,16 @@ object IntTypeConverter : XmlTypeConverter<Int> {
 
 }
 
-fun defaultTypesConverters() = mapOf(
+private val defaultTypeConverters = mutableMapOf(
     String::class to StringTypeConverter,
     Date::class to DateTypeConverter,
     Boolean::class to BooleanTypeConverter,
     Int::class to IntTypeConverter,
     BigDecimal::class to BigDecimalTypeConverter
 )
+
+fun defaultTypesConverters() = defaultTypeConverters
+
+fun setAsDefault(klass: KClass<out Any>, converter: XmlTypeConverter<out Any>) {
+    defaultTypeConverters[klass] = converter
+}
