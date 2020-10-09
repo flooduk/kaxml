@@ -6,13 +6,13 @@ import kotlin.reflect.full.findAnnotation
 
 @Suppress("unused")
 class Builder<T : Any>(
-    klass: KClass<T>,
-    private val converters: Map<KClass<*>, XmlTypeConverter<*>> = defaultTypesConverters()
+        klass: KClass<T>,
+        private val converters: Map<KClass<*>, XmlTypeConverter<*>> = defaultTypesConverters()
 ) {
 
     private data class BuilderXmlEntity(
-        val tag: String,
-        var hasInnerData: Boolean = false
+            val tag: String,
+            var hasInnerData: Boolean = false
     )
 
     private val sb = StringBuilder(2048).append(header)
@@ -58,7 +58,8 @@ class Builder<T : Any>(
     private fun attr(value: Any?, name: String) {
         value?.let {
             converters[it::class]?.from(it)?.let { converted ->
-                sb.append(" $name=\"$converted\"")
+                val masked = mask(converted)
+                sb.append(" $name=\"$masked\"")
             }
         }
     }
@@ -97,6 +98,15 @@ class Builder<T : Any>(
     private fun clear() {
         sb.setLength(0)
         sb.append(header)
+    }
+
+    private fun mask(source: String): String {
+        return source
+                .replace("'", "&apos;")
+                .replace("\"", "&quot;")
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
     }
 
     override fun toString() = sb.toString()

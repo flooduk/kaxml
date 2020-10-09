@@ -62,7 +62,7 @@ object IntTypeConverter : XmlTypeConverter<Int> {
 
 }
 
-private val defaultTypeConverters = mutableMapOf(
+private val defaultTypeConverters = mutableMapOf<KClass<out Any>, XmlTypeConverter<out Any>>(
     String::class to StringTypeConverter,
     Date::class to DateTypeConverter,
     Boolean::class to BooleanTypeConverter,

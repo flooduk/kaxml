@@ -59,7 +59,7 @@ class Parser<T : Any>(
                                 nodeDescription.attr[parser.getAttributeName(i)]?.let {
                                     it.setter.call(
                                         currentTag,
-                                        cast(parser.getAttributeValue(i), it.returnType)
+                                        cast(unmask(parser.getAttributeValue(i)), it.returnType)
                                     )
                                 }
 
@@ -113,6 +113,14 @@ class Parser<T : Any>(
         }
     }
 
+    private fun unmask(source: String): String {
+        return source
+            .replace("&apos;", "'")
+            .replace("&quot;", "\"")
+            .replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+    }
 
     private fun cast(value: String, type: KType): Any? {
         return typeConverters.entries.firstOrNull {
