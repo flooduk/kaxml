@@ -11,6 +11,26 @@ import org.junit.Test
 class ExampleUnitTest {
 
     @Test
+    fun testParse2() {
+
+        val parser = Parser(NodeDown::class)
+        val builder = Builder(NodeDown::class)
+
+        val node = NodeDown().also {
+            it.attr1 = "attr1"
+            it.attr2 = "attr2"
+        }
+
+        val str = builder.build(node)
+        val nd = parser.parse(str)
+
+        println(node)
+        println(str)
+        println(nd)
+
+    }
+
+    @Test
     fun testParse() {
         val xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<RootNode Attribute1=\"string value\" Attribute2=\"42\">\n" +

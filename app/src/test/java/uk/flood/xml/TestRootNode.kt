@@ -74,3 +74,17 @@ class TestRootNode {
     lateinit var innerList: MutableList<TestSealed.Sealed1>
 
 }
+
+@Node("NodeUp")
+open class NodeUp {
+    @Attr("attr1")
+    var attr1: String? = null
+}
+
+@Node("NodeDown")
+class NodeDown: NodeUp() {
+
+    @Attr("attr2")
+    var attr2: String? = null
+
+}

@@ -2,8 +2,10 @@ package uk.flood.xml
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.superclasses
 
 class AnnotatesReference private constructor(
     val klass: KClass<*>
@@ -37,24 +39,33 @@ class AnnotatesReference private constructor(
                 }
             }
         }
+        value.klass.superclasses.forEach {
+            it.declaredMemberProperties.forEach {
+                handleProperty(value, it)
+            }
+        }
         value.klass.declaredMemberProperties.forEach { property ->
-            if (property is KMutableProperty1) {
-                property.annotations.forEach {
-                    when (it) {
-                        is Attr -> {
-                            value.attr[it.value] = property
-                        }
-                        is Node -> {
-                            value.node[it.value] = property
-                            addElement(it.value, property.type(false))
-                        }
-                        is NodeList -> {
-                            value.list[it.value] = property
-                            val xklass = property.type(true)
-                            val elementName = xklass.findAnnotation<Node>()?.value ?: it.value
-                            addElement(elementName, xklass)
-                            addElement(it.value, xklass)
-                        }
+            handleProperty(value, property)
+        }
+    }
+
+    private fun handleProperty(value: XmlNodeDescription, property: KProperty1<*, *>) {
+        if (property is KMutableProperty1) {
+            property.annotations.forEach {
+                when (it) {
+                    is Attr -> {
+                        value.attr[it.value] = property
+                    }
+                    is Node -> {
+                        value.node[it.value] = property
+                        addElement(it.value, property.type(false))
+                    }
+                    is NodeList -> {
+                        value.list[it.value] = property
+                        val xklass = property.type(true)
+                        val elementName = xklass.findAnnotation<Node>()?.value ?: it.value
+                        addElement(elementName, xklass)
+                        addElement(it.value, xklass)
                     }
                 }
             }
