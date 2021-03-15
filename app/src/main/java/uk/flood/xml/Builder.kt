@@ -6,13 +6,13 @@ import kotlin.reflect.full.findAnnotation
 
 @Suppress("unused")
 class Builder<T : Any>(
-        klass: KClass<T>,
-        private val converters: Map<KClass<*>, XmlTypeConverter<*>> = defaultTypesConverters()
+    klass: KClass<T>,
+    private val converters: Map<KClass<*>, XmlTypeConverter<*>> = defaultTypesConverters()
 ) {
 
     private data class BuilderXmlEntity(
-            val tag: String,
-            var hasInnerData: Boolean = false
+        val tag: String,
+        var hasInnerData: Boolean = false
     )
 
     private val sb = StringBuilder(2048).append(header)
@@ -52,6 +52,26 @@ class Builder<T : Any>(
                 }
             }
 
+            refs.get(valueNodeName)?.value?.let { p ->
+                p.getter.call(value)?.let {
+                    value(it.toString())
+                }
+            }
+
+            refs.get(valueNodeName)?.flatList?.let { p ->
+                p.getter.call(value)?.let { propertyValue ->
+                    if (propertyValue is List<*>) {
+                        propertyValue.forEach { v ->
+                            v?.let {
+                                val nodeName = it::class.findAnnotation<Node>()?.value
+                                require(nodeName != null) { "node name must be set for each node of FlatList" }
+                                addNode(it, nodeName)
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 
@@ -70,13 +90,13 @@ class Builder<T : Any>(
         }
     }
 
-//    private fun value(value: String?) {
-//        value?.let {
-//            stack.peek().hasInnerData = true
-//            closeTag()
-//            sb.append(value)
-//        }
-//    }
+    private fun value(value: String?) {
+        value?.let {
+            stack.peek().hasInnerData = true
+            closeTag()
+            sb.append(value)
+        }
+    }
 
     private fun tag(name: String) {
         if (!stack.empty()) {
@@ -102,11 +122,11 @@ class Builder<T : Any>(
 
     private fun mask(source: String): String {
         return source
-                .replace("'", "&apos;")
-                .replace("\"", "&quot;")
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
+            .replace("'", "&apos;")
+            .replace("\"", "&quot;")
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
     }
 
     override fun toString() = sb.toString()

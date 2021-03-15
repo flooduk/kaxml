@@ -67,6 +67,14 @@ class AnnotatesReference private constructor(
                         addElement(elementName, xklass)
                         addElement(it.value, xklass)
                     }
+                    is Value -> {
+                        value.value = property
+                    }
+                    is FlatList -> {
+                        value.flatList = property
+                        val xklass = property.type(true)
+                        prepareInternal(XmlNodeDescription(xklass))
+                    }
                 }
             }
         }

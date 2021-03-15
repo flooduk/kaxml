@@ -2,9 +2,11 @@
 
 package uk.flood.xml
 
+import androidx.core.os.persistableBundleOf
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
+import java.lang.reflect.InvocationTargetException
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
@@ -67,6 +69,12 @@ class Parser<T : Any>(
                         }
                     }
                 }
+                XmlPullParser.TEXT -> {
+                    val pair = stack.peek()
+                    pair.first.value?.let {
+                        it.setter.call(pair.second, cast(unmask(parser.text), it.returnType))
+                    }
+                }
                 XmlPullParser.END_TAG -> {
                     refs.get(parser.name)?.let { nodeDescription ->
                         if (nodeDescription == stack.peek().first) {
@@ -74,6 +82,8 @@ class Parser<T : Any>(
                             if (!stack.isEmpty()) {
                                 stack.peek().let {
                                     it.first.node[parser.name]?.let { property ->
+                                        addNode(it.second, property, currentTag)
+                                    } ?: it.first.flatList?.let { property ->
                                         addNode(it.second, property, currentTag)
                                     }
 
@@ -99,9 +109,10 @@ class Parser<T : Any>(
 
     private fun addNode(objectReference: Any, property: KMutableProperty1<*, *>, value: Any?) {
         if (property.isList()) {
-            var currentValue: Any? = null
-            if (!property.isLateinit) {
-                currentValue = property.getter.call(objectReference)
+            var currentValue = try {
+                property.getter.call(objectReference)
+            } catch (e: InvocationTargetException) {
+                null
             }
             if (currentValue == null) {
                 currentValue = mutableListOf<Any>()

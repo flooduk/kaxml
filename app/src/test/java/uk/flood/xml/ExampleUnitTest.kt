@@ -10,6 +10,83 @@ import org.junit.Test
  */
 class ExampleUnitTest {
 
+    sealed class Data {
+
+        @Node("TextBlock")
+        class TextBlock {
+            @Attr("FontNum")
+            lateinit var fontNum: String
+
+            @Attr("Bold")
+            lateinit var bold: String
+
+            @Value
+            lateinit var value: String
+
+            override fun toString(): String {
+                return "TextBlock(fontNum='$fontNum', bold='$bold', value='$value')"
+            }
+
+
+        }
+
+        @Node("TextLine")
+        class TextLine {
+            @Attr("FontNum")
+            lateinit var fontNum: String
+
+            @Attr("Bold")
+            lateinit var bold: String
+
+            @Attr("Text")
+            lateinit var text: String
+
+            override fun toString(): String {
+                return "TextLine(fontNum='$fontNum', bold='$bold', text='$text')"
+            }
+
+
+        }
+    }
+
+    @Node("Unfiscal")
+    class Unfiscal {
+        @Attr("Slip")
+        lateinit var slip: String
+
+        @Attr("CutAfter")
+        lateinit var cutAfter: String
+
+        @FlatList
+        lateinit var list: List<Data>
+
+        override fun toString(): String {
+            return "Unfiscal(slip='$slip', cutAfter='$cutAfter' list=$list)"
+        }
+
+
+    }
+
+    @Test
+    fun tryToMakeUCS() {
+        val unfiscal = Parser(Unfiscal::class).parse(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                    "<Unfiscal Slip=\"1\" CutAfter=\"2\">" +
+                    "<TextBlock FontNum=\"3\" Bold=\"4\">" +
+                    "Строка 1" +
+                    "Строка 2" +
+                    "Строка 3" +
+                    "</TextBlock>" +
+                    "<TextLine FontNum=\"5\" Bold=\"6\" Text=\"data\"/>" +
+                    "<TextLine FontNum=\"7\" Bold=\"8\" Text=\"data 2\"/>" +
+                    "</Unfiscal>"
+        )
+        println(unfiscal)
+
+        val xml = Builder(Unfiscal::class).build(unfiscal)
+        println(xml)
+    }
+
     @Test
     fun testParse2() {
 
