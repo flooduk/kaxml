@@ -25,9 +25,9 @@ class AnnotatesReference private constructor(
     }
 
     private fun addElement(name: String, klass: KClass<*>) {
-        XmlNodeDescription(klass).also {
-            prepareInternal(it)
+        mapex.get(name) ?: XmlNodeDescription(klass).also {
             mapex[name] = it
+            prepareInternal(it)
         }
     }
 

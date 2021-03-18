@@ -1,7 +1,10 @@
 package uk.flood.xml
 
+import android.util.Base64
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.math.BigDecimal
+import kotlin.properties.Delegates
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -9,6 +12,132 @@ import org.junit.Test
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
+
+
+    class PrinterSettings {
+
+        @Attr("onlyElectronReceipt")
+        var onlyElectronReceipt: Boolean = false
+
+        @Attr("calculateDiscounts")
+        var calculateDiscounts: Boolean = false
+
+        @Attr("printDividers")
+        var printDividers: Boolean = false
+
+        @Attr("printFullPrice")
+        var printFullPrice: Boolean = false
+
+        @Attr("printTaxes")
+        var printTaxes: Boolean = false
+    }
+
+    @Node("requisite")
+    class Requisite {
+        @Attr("tag")
+        var tag: Int by Delegates.notNull()
+
+        @Attr("value")
+        var value: String? = null
+
+        @NodeList("fiscalRequisites")
+        var requisites: List<Requisite> = mutableListOf()
+
+        @Attr("type") // FiscalRequisiteType
+        var type: Int by Delegates.notNull()
+
+        @Attr("mustPrint")
+        var mustPrint: Boolean = true
+
+    }
+
+    @Node("position")
+    class Position {
+
+        @Attr("name")
+        lateinit var name: String
+
+        @Attr("quantity")
+        var quantity: BigDecimal = BigDecimal.ONE
+
+        @Attr("price")
+        lateinit var price: BigDecimal
+
+        @Attr("priceWithDiscount")
+        lateinit var priceWithDiscount: BigDecimal
+
+        @Attr("sum")
+        lateinit var sum: BigDecimal
+
+        @Attr("tax")
+        var tax: Int by Delegates.notNull()
+
+        @Attr("settlementMethod")
+        var settlementMethod: Int by Delegates.notNull()
+
+        @Attr("partialSettlementSum")
+        var partialSum: BigDecimal? = null
+
+        @Attr("additionalInfoForPosition")
+        var additionalInfo: String? = null
+
+        @Attr("productType")
+        var productType: Int by Delegates.notNull()
+
+        @NodeList("fiscalRequisites")
+        var fiscalRequisites: List<Requisite> = mutableListOf()
+    }
+
+    @Node("payment")
+    class Payment {
+
+        @Attr("type")
+        var type: Int = 1
+
+        @Attr("sum")
+        lateinit var sum: BigDecimal
+
+    }
+
+    @Node("request")
+    class FiscalReceiptRequest {
+
+        @Attr("settlementType")
+        var settlementType: Int by Delegates.notNull()
+
+        @Attr("sessionNumber")
+        var session: Int? = null
+
+        @Attr("receiptNumber")
+        var receipt: Int? = null
+
+        @Attr("taxationSystem")
+        var taxationSystem: Int by Delegates.notNull()
+
+        @Attr("clientPhone")
+        var clientPhone: String? = null
+
+        @Attr("clientEmail")
+        var clientEmail: String? = null
+
+        @Node("printerSettings")
+        var printerSettings: PrinterSettings? = null
+
+        @NodeList("fiscalRequisites")
+        var fiscalRequisites: List<Requisite> = mutableListOf()
+
+        @NodeList("positions")
+        lateinit var positions: List<Position>
+
+        @NodeList("payments")
+        lateinit var payments: List<Payment>
+
+        override fun toString(): String {
+            return "FiscalReceiptRequest(session=$session, receipt=$receipt, clientPhone=$clientPhone, clientEmail=$clientEmail, printerSettings=$printerSettings, fiscalRequisites=$fiscalRequisites, positions=$positions, payments=$payments)"
+        }
+
+
+    }
 
     sealed class Data {
 
@@ -65,6 +194,26 @@ class ExampleUnitTest {
         }
 
 
+    }
+
+    @Test
+    fun testPrintReceipt() {
+        val receipt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<request settlementType=\"1\" taxationSystem=\"1\">" +
+                "<cashier inn=\"inn\" name=\"name\"/>" +
+                "<positions>" +
+                "<position name=\"test\" price=\"10.00\" tax=\"1\" settlementMethod=\"4\" productType=\"1\" priceWithDiscount=\"10.00\" sum=\"10.00\"/>" +
+                "</positions>" +
+                "<payments>" +
+                "<payment type=\"1\" sum=\"10.00\"/>" +
+                "</payments>" +
+                "</request>"
+
+        val obj = Parser(FiscalReceiptRequest::class).parse(receipt)
+        println(obj)
+
+        val xml = Builder(FiscalReceiptRequest::class).build(obj)
+        println(xml)
     }
 
     @Test
