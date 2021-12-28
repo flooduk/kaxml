@@ -280,7 +280,7 @@ class ExampleUnitTest {
         val builder = Builder(TestRootNode::class)
 
         val testString = builder.build(TestRootNode().also {
-            it.attribute1 = "123"
+            it.attribute1 = "ООО \"Пример\""
             it.attribute2 = 456
             it.innerList = mutableListOf<TestSealed.Sealed1>().also {
                 it.add(TestSealed.Sealed1().also {

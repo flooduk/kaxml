@@ -122,9 +122,9 @@ class Builder<T : Any>(
 
     private fun mask(source: String): String {
         return source
+            .replace("&", "&amp;")
             .replace("'", "&apos;")
             .replace("\"", "&quot;")
-            .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
     }
